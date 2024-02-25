@@ -1,0 +1,9 @@
+# Adafruit QT Py ESP32-S3 board configuration
+
+config BOARD_ADAFRUIT_QTPY_ESP32S3
+	bool "Adafruit QT Py ESP32-S3"
+	depends on SOC_SERIES_ESP32S3
+
+choice SOC_PART_NUMBER
+	default SOC_ESP32S3_WROOM_N8R8
+endchoice
