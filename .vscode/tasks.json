@@ -15,14 +15,49 @@
 				"-b",
 				"${config:bsp.board}/${config:bsp.soc}${config:bsp.cpu}",
 				"${config:app.name}",
-				"${config:app.zephyr_config}",
-				"${config:app.zephyr_dtc_overlay}",
-				"${config:app_boot.compile_args}"
+				// "${config:app.zephyr_config}",
+				// "${config:app.zephyr_dtc_overlay}",
+				// "${config:app_boot.compile_args}"
 			],
 			"dependsOn": [
 				// "Clean Build",
 			],
 			"problemMatcher": [ "$gcc" ]
+		},
+		{
+			"label": "West Flash App",
+			"type": "process",
+			"group": "build",
+			"command": "${config:west}",
+			"args": [
+				"flash",
+				"-d",
+				"${config:app.build_dir}",
+				"--esp-device",
+				"/dev/ttyACM0"
+			],
+			"dependsOn": [
+				// "West Build App",
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "West Monitor App",
+			"type": "process",
+			"group": "build",
+			"command": "${config:west}",
+			"args": [
+				"espressif",
+				"-e",
+				"${config:app.build_dir}/zephyr/zephyr.elf",
+				"-p",
+				"/dev/ttyACM0",
+				"monitor"
+			],
+			"dependsOn": [
+				// "West Flash App",
+			],
+			"problemMatcher": []
 		},
 		{
 			"label": "West Build Bootloader",
@@ -38,9 +73,9 @@
 				"-b",
 				"${config:bsp.board}/${config:bsp.soc}${config:bsp.cpu}",
 				"${config:app_boot.name}",
-				"${config:app_boot.zephyr_config}",
-				"${config:app_boot.zephyr_dtc_overlay}",
-				"${config:app_boot.compile_args}"
+				// "${config:app_boot.zephyr_config}",
+				// "${config:app_boot.zephyr_dtc_overlay}",
+				// "${config:app_boot.compile_args}"
 			],
 			"dependsOn": [
 				// "Clean Build",

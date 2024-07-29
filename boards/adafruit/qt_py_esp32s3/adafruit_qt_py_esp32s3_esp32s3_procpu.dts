@@ -15,6 +15,7 @@
 		zephyr,shell-uart = &usb_serial;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
+		zephyr,bt-hci = &esp32_bt_hci;
 	};
 
 	aliases {
@@ -31,14 +32,6 @@
 			zephyr,code = <INPUT_KEY_0>;
 		};
 	};
-};
-
-&cpu0 {
-	clock-frequency = <ESP32_CLK_CPU_240M>;
-};
-
-&cpu1 {
-	clock-frequency = <ESP32_CLK_CPU_240M>;
 };
 
 &usb_serial {
@@ -74,8 +67,16 @@
 &spi2 {
 	#address-cells = <1>;
 	#size-cells = <0>;
-	status = "okay";
+	status = "disabled";
 	pinctrl-0 = <&spim2_default>;
+	pinctrl-names = "default";
+};
+
+&spi3 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+	pinctrl-0 = <&spim3_default>;
 	pinctrl-names = "default";
 };
 
@@ -94,7 +95,6 @@
 &twai {
 	pinctrl-0 = <&twai_default>;
 	pinctrl-names = "default";
-	bus-speed = <125000>;
 };
  
 &timer0 {
@@ -114,28 +114,32 @@
 
 		boot_partition: partition@0 {
 			label = "mcuboot";
-			reg = <0x00000000 0x0000F000>;
+			reg = <0x00000000 DT_SIZE_K(64)>;
 			read-only;
 		};
 
 		slot0_partition: partition@10000 {
 			label = "image-0";
-			reg = <0x00010000 0x00100000>;
+			reg = <0x00010000 DT_SIZE_M(1)>;
 		};
 
 		slot1_partition: partition@110000 {
 			label = "image-1";
-			reg = <0x00110000 0x00100000>;
+			reg = <0x00110000 DT_SIZE_M(1)>;
 		};
 
 		scratch_partition: partition@210000 {
 			label = "image-scratch";
-			reg = <0x00210000 0x00040000>;
+			reg = <0x00210000 DT_SIZE_K(256)>;
 		};
 
 		storage_partition: partition@250000 {
 			label = "storage";
-			reg = <0x00250000 0x00006000>;
+			reg = <0x00250000 DT_SIZE_K(24)>;
 		};
 	};
+};
+
+&esp32_bt_hci {
+	status = "okay";
 };

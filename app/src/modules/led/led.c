@@ -9,14 +9,14 @@
 
 LOG_MODULE_REGISTER(led, CONFIG_LED_MODULE_LOG_LEVEL);
 
-#define STRIP_NODE		DT_ALIAS(led_strip)
+#define STRIP_NODE DT_ALIAS(led_strip)
 #if DT_NODE_HAS_PROP(DT_ALIAS(led_strip), chain_length)
-#define STRIP_NUM_PIXELS	DT_PROP(DT_ALIAS(led_strip), chain_length)
+#define STRIP_NUM_PIXELS DT_PROP(DT_ALIAS(led_strip), chain_length)
 #else
 #error Unable to determine length of LED strip
 #endif
 
-#define RGB(_r, _g, _b) { .r = (_r), .g = (_g), .b = (_b) }
+#define RGB(_r, _g, _b) {.r = (_r), .g = (_g), .b = (_b)}
 
 static const struct led_rgb colors[] = {
 	RGB(0x0f, 0x00, 0x00), /* red */
@@ -60,7 +60,7 @@ static void led_fn(void)
 	/* Boot to State Sleep */
 	sys_state = SYS_SLEEP;
 
-	LOG_INF("LED module started\n");
+	LOG_INF("LED module started");
 	while (1) {
 		switch (sys_state) {
 		case SYS_SLEEP:
@@ -94,5 +94,5 @@ static void led_fn(void)
 	}
 }
 
-K_THREAD_DEFINE(led_task, CONFIG_LED_MODULE_THREAD_STACK_SIZE, led_fn, NULL,
-		NULL, NULL, CONFIG_LED_MODULE_THREAD_STACK_PRIO, 0, 0);
+K_THREAD_DEFINE(led_task, CONFIG_LED_MODULE_THREAD_STACK_SIZE, led_fn, NULL, NULL, NULL,
+		CONFIG_LED_MODULE_THREAD_STACK_PRIO, 0, 0);

@@ -4,8 +4,8 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: golioth
       url-base: https://github.com/golioth
-    - name: gardin
-      url-base: git@github.com:gardinltd
+    - name: eclipse-zenoh
+      url-base: https://github.com/eclipse-zenoh
 
   projects:
     - name: zephyr
@@ -27,8 +27,8 @@ manifest:
       revision: main
       submodules: true
 
-    - name: ros2
-      repo-path: libros2-zephyr
-      remote: gardin
+    - name: zenoh
+      repo-path: zenoh-pico
+      remote: eclipse-zenoh
       revision: main
-      path: modules/ros2
+      path: modules/lib/zenoh
