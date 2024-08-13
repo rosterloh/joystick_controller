@@ -66,18 +66,18 @@ static void led_fn(void)
 		case SYS_SLEEP:
 			memset(&pixels, 0x00, sizeof(pixels));
 			led_strip_update_rgb(strip, pixels, STRIP_NUM_PIXELS);
-			LOG_INF("LED off");
+			LOG_DBG("LED off");
 			/* Nothing to do, blocking wait to save energy */
 			ret = zbus_sub_wait(&led_subscriber, &chan, K_FOREVER);
 			break;
 		case SYS_STANDBY:
 			memcpy(&pixels[0], &colors[0], sizeof(struct led_rgb));
 			led_strip_update_rgb(strip, pixels, STRIP_NUM_PIXELS);
-			LOG_INF("LED on");
+			LOG_DBG("LED on");
 			k_sleep(K_MSEC(50));
 			memset(&pixels, 0x00, sizeof(pixels));
 			led_strip_update_rgb(strip, pixels, STRIP_NUM_PIXELS);
-			LOG_INF("LED off");
+			LOG_DBG("LED off");
 			k_sleep(K_MSEC(500));
 			/* Blinking led, blocking wait not possible */
 			ret = zbus_sub_wait(&led_subscriber, &chan, K_NO_WAIT);

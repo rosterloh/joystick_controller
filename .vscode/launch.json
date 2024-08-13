@@ -18,6 +18,7 @@
 			"armToolchainPath": "${env:HOME}/zephyr-sdk/xtensa-espressif_esp32s3_zephyr-elf/bin",
 			"svdFile": "${config:bsp.svd}",
 			"showDevDebugOutput": "raw",
+			// "rtos": "Zephyr",
 			"configFiles": [
 				"${config:bsp.debug_config}"
 			]
@@ -37,6 +38,7 @@
 			"armToolchainPath": "${env:HOME}/zephyr-sdk/xtensa-espressif_esp32s3_zephyr-elf/bin",
 			"svdFile": "${config:bsp.svd}",
 			"showDevDebugOutput": "raw",
+			// "rtos": "Zephyr",
 			"configFiles": [
 				"${config:bsp.debug_config}"
 			]

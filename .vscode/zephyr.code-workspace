@@ -38,7 +38,7 @@
 			"board": "adafruit_qt_py_esp32s3",
 			"vendor": "adafruit",
 			"board_root": "${workspaceRoot}/boards",
-			"board_path": "${config:bsp.board_root}/${config:bsp.vendor}/${config:bsp.board}",
+			"board_path": "${config:bsp.board_root}/${config:bsp.vendor}/qt_py_esp32s3",
 			"svd": "${workspaceFolder}/svd/${config:bsp.soc}.svd",
 			"debug_config": "${config:bsp.board_path}/support/openocd.cfg"
 		},
@@ -79,7 +79,7 @@
 		// will be detected based on the file contents. Set to false to keep
 		// the values you've explicitly set, above.
 		"editor.detectIndentation": false,
-		"editor.rulers": [80],
+		"editor.rulers": [100],
 
 		"editor.cursorBlinking": "smooth",
 
@@ -90,7 +90,13 @@
 		"editor.renderWhitespace": "all",
 
 		"files.associations": {
-			"app_version.h": "c"
+			"app_version.h": "c",
+			"chrono": "c",
+			"variant": "c",
+			"cstdint": "c",
+			"compare": "c",
+			"seesaw.h": "c",
+			"*.ipp": "c"
 		},
 
 		"files.watcherExclude": {

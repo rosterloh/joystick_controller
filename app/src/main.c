@@ -1,5 +1,4 @@
 #include <zephyr/zbus/zbus.h>
-#include <zephyr/shell/shell.h>
 
 #include "message_channel.h"
 
@@ -8,7 +7,6 @@ LOG_MODULE_REGISTER(app, CONFIG_LED_MODULE_LOG_LEVEL);
 
 /* Boot to State Standby */
 static enum sys_states sys_state = SYS_STANDBY;
-
 
 static void led_msg(enum sys_states msg)
 {
@@ -29,6 +27,8 @@ static void button_msg_cb(const struct zbus_channel *chan)
 
 	if (*msg_type != SYS_BUTTON_PRESSED) {
 		/* Ignore other messages */
+		uint32_t button_evt = *msg_type - 1;
+		LOG_INF("Button %d %s", button_evt % 4, button_evt > 4 ? "released " : "pressed");
 		return;
 	}
 
@@ -52,32 +52,6 @@ static void button_msg_cb(const struct zbus_channel *chan)
 
 	led_msg(sys_state);
 }
-
-static int cmd_button(const struct shell *sh, size_t argc, char **argv,
-		      void *data)
-{
-	int err;
-	enum sys_events msg;
-
-	msg = SYS_BUTTON_PRESSED;
-
-	err = zbus_chan_pub(&button_ch, &msg, K_SECONDS(1));
-	if (err) {
-		LOG_ERR("zbus_chan_pub, error: %d", err);
-	}
-
-	return 0;
-}
-
-SHELL_SUBCMD_DICT_SET_CREATE(sub_button_cmds, cmd_button,
-	(button_press, 1, "Trigger Button Press")
-);
-
-SHELL_STATIC_SUBCMD_SET_CREATE(my_app_cmds,
-	SHELL_CMD(button, &sub_button_cmds, "Button test commands", NULL),
-	SHELL_SUBCMD_SET_END /* Array terminated. */
-);
-SHELL_CMD_REGISTER(my_app, &my_app_cmds, "my App test", NULL);
 
 int main(void)
 {
