@@ -28,7 +28,8 @@ static void button_msg_cb(const struct zbus_channel *chan)
 	if (*msg_type != SYS_BUTTON_PRESSED) {
 		/* Ignore other messages */
 		uint32_t button_evt = *msg_type - 1;
-		LOG_INF("Button %d %s", button_evt % 4, button_evt > 4 ? "released " : "pressed");
+		LOG_INF("Button %d %s", button_evt % BUTTON_D_PRESSED,
+			button_evt > BUTTON_D_PRESSED ? "released " : "pressed");
 		return;
 	}
 

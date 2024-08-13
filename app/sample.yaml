@@ -7,7 +7,7 @@ sample:
 common:
   build_only: true
   integration_platforms:
-    - adafruit_qt_py_esp32s3
+    - adafruit_qt_py_esp32s3/esp32s3/procpu
 tests:
   app.default: {}
 #  app.debug:

@@ -96,7 +96,18 @@
 			"cstdint": "c",
 			"compare": "c",
 			"seesaw.h": "c",
-			"*.ipp": "c"
+			"*.ipp": "c",
+			"array": "c",
+			"charconv": "c",
+			"functional": "c",
+			"ratio": "c",
+			"tuple": "c",
+			"type_traits": "c",
+			"utility": "c",
+			"string": "c",
+			"string_view": "c",
+			"span": "c",
+			"random": "c"
 		},
 
 		"files.watcherExclude": {

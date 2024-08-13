@@ -1,5 +1,6 @@
 #define DT_DRV_COMPAT adafruit_seesaw
 
+#include <stdlib.h>
 #include <string.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/byteorder.h>
@@ -133,6 +134,13 @@ static int seesaw_get_analog(const struct device *dev, uint8_t pin, uint16_t *va
 static int seesaw_set_gpio_interrupts(const struct device *dev, uint32_t pins, uint8_t en)
 {
 	int ret;
+	struct seesaw_data *data = dev->data;
+
+	if (!(data->options & BIT(SEESAW_INTERRUPT_BASE))) {
+		LOG_ERR("Seesaw device %s does not support interrupts", dev->name);
+		return -EINVAL;
+	}
+
 	uint8_t cmd[4];
 	sys_put_be32(pins, cmd);
 
@@ -143,6 +151,122 @@ static int seesaw_set_gpio_interrupts(const struct device *dev, uint32_t pins, u
 	}
 
 	return ret;
+}
+
+static int seesaw_setup_neopixel(const struct device *dev, uint16_t type, uint16_t length,
+				 uint8_t pin)
+{
+	int ret;
+	struct seesaw_data *data = dev->data;
+
+	if (!(data->options & BIT(SEESAW_NEOPIXEL_BASE))) {
+		LOG_ERR("Seesaw device %s does not support neopixels", dev->name);
+		return -EINVAL;
+	}
+
+	// See notes in header file regarding R/G/B/W offsets
+	data->neo_cfg.is_800khz = (type < BIT(8)); // 400 KHz flag is 1<<8
+	data->neo_cfg.w_offset = (type >> 6) & 0b11;
+	data->neo_cfg.r_offset = (type >> 4) & 0b11;
+	data->neo_cfg.g_offset = (type >> 2) & 0b11;
+	data->neo_cfg.b_offset = type & 0b11;
+
+	uint8_t speed = data->neo_cfg.is_800khz ? 1 : 0;
+	ret = seesaw_write(dev, SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_SPEED, &speed, sizeof(speed));
+	if (ret < 0) {
+		LOG_ERR("Failed to set NeoPixel speed. (%d)", ret);
+		return ret;
+	}
+	data->neo_cfg.is_rgb = data->neo_cfg.w_offset == data->neo_cfg.r_offset;
+	data->neo_cfg.num_bytes = length * (data->neo_cfg.is_rgb ? 3 : 4);
+
+	if ((data->neo_cfg.pixels = (uint8_t *)malloc(data->neo_cfg.num_bytes))) {
+		memset(data->neo_cfg.pixels, 0, data->neo_cfg.num_bytes);
+		data->neo_cfg.num_leds = length;
+	} else {
+		LOG_ERR("Failed to allocate pixel array");
+		data->neo_cfg.num_leds = data->neo_cfg.num_bytes = 0;
+		return -ENOMEM;
+	}
+
+	uint8_t cmd[2];
+	sys_put_be16(data->neo_cfg.num_bytes, cmd);
+	ret = seesaw_write(dev, SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF_LENGTH, cmd, sizeof(cmd));
+	if (ret < 0) {
+		LOG_ERR("Failed to set NeoPixel length. (%d)", ret);
+		return ret;
+	}
+
+	ret = seesaw_write(dev, SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_PIN, &pin, sizeof(pin));
+	data->neo_cfg.pin = pin;
+	if (ret < 0) {
+		LOG_ERR("Failed to set NeoPixel pin. (%d)", ret);
+		return ret;
+	}
+
+	return ret;
+}
+
+static int seesaw_set_neopixel_colour(const struct device *dev, uint8_t n, uint8_t r, uint8_t g,
+				      uint8_t b, uint8_t w)
+{
+	int ret;
+	struct seesaw_data *data = dev->data;
+
+	if (n < data->neo_cfg.num_leds) {
+		if (data->neo_cfg.brightness) {
+			r = (r * data->neo_cfg.brightness) >> 8;
+			g = (g * data->neo_cfg.brightness) >> 8;
+			b = (b * data->neo_cfg.brightness) >> 8;
+			w = (w * data->neo_cfg.brightness) >> 8;
+		}
+		uint8_t *p;
+		if (data->neo_cfg.is_rgb) {
+			p = &data->neo_cfg.pixels[n * 3];
+		} else {
+			p = &data->neo_cfg.pixels[n * 4];
+			p[data->neo_cfg.w_offset] = w;
+		}
+		p[data->neo_cfg.r_offset] = r;
+		p[data->neo_cfg.g_offset] = g;
+		p[data->neo_cfg.b_offset] = b;
+
+		uint8_t len = (data->neo_cfg.is_rgb ? 3 : 4);
+		uint16_t offset = n * len;
+
+		uint8_t write_buf[6];
+		sys_put_be16(offset, write_buf);
+		memcpy(&write_buf[2], p, len);
+
+		ret = seesaw_write(dev, SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, write_buf,
+				   len + 2);
+	} else {
+		LOG_ERR("Invalid LED index %d given", n);
+		ret = -EINVAL;
+	}
+
+	return ret;
+}
+
+static int seesaw_set_neopixel_brightness(const struct device *dev, uint8_t brightness)
+{
+	struct seesaw_data *data = dev->data;
+
+	data->neo_cfg.brightness = brightness;
+
+	return 0;
+}
+
+static int seesaw_show_neopixel(const struct device *dev)
+{
+	struct seesaw_data *data = dev->data;
+
+	if (!data->neo_cfg.pixels) {
+		LOG_ERR("Device NeoPixels not yet configured");
+		return -EBUSY;
+	}
+
+	return seesaw_write(dev, SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_SHOW, NULL, 0);
 }
 
 static int seesaw_sw_reset(const struct device *dev)
@@ -273,6 +397,10 @@ static const struct seesaw_driver_api seesaw_driver_api = {
 #ifdef CONFIG_SEESAW_TRIGGER
 	.int_set = seesaw_set_int_callback,
 #endif
+	.neopixel_setup = seesaw_setup_neopixel,
+	.neopixel_set_colour = seesaw_set_neopixel_colour,
+	.neopixel_set_brightness = seesaw_set_neopixel_brightness,
+	.neopixel_show = seesaw_show_neopixel,
 };
 
 #define SEESAW_INIT(index)                                                                         \

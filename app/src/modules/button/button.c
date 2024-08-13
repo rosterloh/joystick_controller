@@ -44,6 +44,32 @@ static void neokey_scan_fn(struct k_work *work)
 			LOG_DBG("Pressed 0x%x, Released 0x%x", just_pressed, just_released);
 			for (int b = 0; b < 4; b++) {
 				if (just_pressed & BIT(b)) {
+					switch (b) {
+					case 0:
+						seesaw_neopixel_set_colour(neokey, b, 0xFF, 0, 0,
+									   0);
+						break;
+
+					case 1:
+						seesaw_neopixel_set_colour(neokey, b, 0, 0xFF, 0,
+									   0);
+						break;
+
+					case 2:
+						seesaw_neopixel_set_colour(neokey, b, 0, 0, 0xFF,
+									   0);
+						break;
+
+					case 3:
+						seesaw_neopixel_set_colour(neokey, b, 0xFF, 0, 0xFF,
+									   0);
+						break;
+
+					default:
+						seesaw_neopixel_set_colour(neokey, b, 0, 0, 0, 0);
+						break;
+					}
+
 					msg = BUTTON_A_PRESSED + b;
 					err = zbus_chan_pub(&button_ch, &msg, K_SECONDS(1));
 					if (err) {
@@ -52,6 +78,7 @@ static void neokey_scan_fn(struct k_work *work)
 				}
 
 				if (just_released & BIT(b)) {
+					seesaw_neopixel_set_colour(neokey, b, 0, 0, 0, 0);
 					msg = BUTTON_A_RELEASED + b;
 					err = zbus_chan_pub(&button_ch, &msg, K_SECONDS(1));
 					if (err) {
@@ -59,6 +86,7 @@ static void neokey_scan_fn(struct k_work *work)
 					}
 				}
 			}
+			seesaw_neopixel_show(neokey);
 		}
 		last_buttons = buttons;
 	} else {
@@ -141,6 +169,13 @@ static int init(void)
 	ret = seesaw_gpio_interrupts(neokey, NEOKEY_1X4_BUTTONMASK, 1);
 	if (ret != 0) {
 		LOG_ERR("Error %d: failed to enable neokey interrupts", ret);
+		return 0;
+	}
+	ret = seesaw_neopixel_setup(neokey, NEO_GRB + NEO_KHZ800, NEOKEY_1X4_KEYS,
+				    NEOKEY_1X4_NEOPIN);
+	ret |= seesaw_neopixel_set_brightness(neokey, 40);
+	if (ret != 0) {
+		LOG_ERR("Error %d: failed to setup neokey leds", ret);
 		return 0;
 	}
 

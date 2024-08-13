@@ -176,9 +176,9 @@ enum {
 union keyEventRaw {
 	struct {
 		uint8_t EDGE: 2; ///< the edge that was triggered
-		uint8_t NUM: 6;	 ///< the event number
-	} bit;			 ///< bitfield format
-	uint8_t reg;		 ///< register format
+		uint8_t NUM: 6;  ///< the event number
+	} bit;                   ///< bitfield format
+	uint8_t reg;             ///< register format
 };
 
 /** extended key event stucture for keypad module */
@@ -186,8 +186,8 @@ union keyEvent {
 	struct {
 		uint8_t EDGE: 2;  ///< the edge that was triggered
 		uint16_t NUM: 14; ///< the event number
-	} bit;			  ///< bitfield format
-	uint16_t reg;		  ///< register format
+	} bit;                    ///< bitfield format
+	uint16_t reg;             ///< register format
 };
 
 /** key state struct that will be written to seesaw chip keypad module */
@@ -195,11 +195,11 @@ union keyState {
 	struct {
 		uint8_t STATE: 1;  ///< the current state of the key
 		uint8_t ACTIVE: 4; ///< the registered events for that key
-	} bit;			   ///< bitfield format
-	uint8_t reg;		   ///< register format
+	} bit;                     ///< bitfield format
+	uint8_t reg;               ///< register format
 };
 
-#define SEESAW_WAIT_STARTUP_US	     10000
+#define SEESAW_WAIT_STARTUP_US       10000
 #define SEESAW_WAIT_INITIAL_RESET_US 10000
 
 struct seesaw_config {
@@ -210,10 +210,25 @@ struct seesaw_config {
 #endif
 };
 
+struct neopixel_config {
+	bool is_800khz;
+	bool is_rgb;
+	uint8_t w_offset;
+	uint8_t r_offset;
+	uint8_t g_offset;
+	uint8_t b_offset;
+	uint16_t num_bytes;
+	uint16_t num_leds;
+	uint8_t *pixels;
+	uint8_t pin;
+	uint8_t brightness;
+};
+
 struct seesaw_data {
 	uint8_t hw_id;
 	uint16_t pid;
 	uint32_t options;
+	struct neopixel_config neo_cfg;
 #ifdef CONFIG_SEESAW_TRIGGER
 	const struct device *dev;
 	struct gpio_callback gpio_cb;
