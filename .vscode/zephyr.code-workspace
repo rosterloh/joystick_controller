@@ -107,7 +107,8 @@
 			"string": "c",
 			"string_view": "c",
 			"span": "c",
-			"random": "c"
+			"random": "c",
+			"cstdlib": "c"
 		},
 
 		"files.watcherExclude": {

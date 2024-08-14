@@ -55,7 +55,7 @@ int seesaw_write(const struct device *dev, uint8_t reg_high, uint8_t reg_low, ui
 
 static int seesaw_set_pin_mode(const struct device *dev, uint32_t pins, uint8_t mode)
 {
-	int ret;
+	int ret = 0;
 	uint8_t cmd[4];
 	sys_put_be32(pins, cmd);
 

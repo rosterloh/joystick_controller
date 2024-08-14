@@ -17,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          path: pico_fw
+          path: joystick_controller
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -27,11 +27,11 @@ jobs:
       - name: Setup Zephyr project
         uses: zephyrproject-rtos/action-zephyr-setup@v1
         with:
-          app-path: pico_fw
-          toolchains: arm-zephyr-eabi
+          app-path: joystick_controller
+          toolchains: xtensa-espressif_esp32s3_zephyr-elf
 
       - name: Build firmware
-        working-directory: pico_fw
+        working-directory: joystick_controller
         shell: bash
         run: |
           if [ "${{ runner.os }}" = "Windows" ]; then
@@ -40,7 +40,7 @@ jobs:
           west twister -T app -v --inline-logs --integration $EXTRA_TWISTER_FLAGS
 
       - name: Twister Tests
-        working-directory: pico_fw
+        working-directory: joystick_controller
         shell: bash
         run: |
           if [ "${{ runner.os }}" = "Windows" ]; then
